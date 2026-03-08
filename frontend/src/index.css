@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-primary antialiased;
+  }
+}
+
+.card {
+  @apply rounded-xl border border-border bg-panel p-6;
+}
+
+.input {
+  @apply w-full rounded-lg border border-border bg-surface px-4 py-2 text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary;
+}
+
+.btn-primary {
+  @apply rounded-lg bg-primary px-4 py-2 font-medium text-white transition-all active:scale-95 hover:bg-primary-accent;
+}

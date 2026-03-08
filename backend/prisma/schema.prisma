@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  operator
+}
+
+enum MovementType {
+  entrada
+  saida
+  devolucao
+  ajuste
+  pos
+}
+
+enum OrderChannel {
+  shopify
+  mirakl
+  pos
+}
+
+enum ReturnStatus {
+  pending
+  processed
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(operator)
+  movements     InventoryMovement[]
+  posSales      PosSale[]
+  processedReturns Return[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Product {
+  id                 String    @id @default(uuid())
+  sku                String    @unique
+  ean                String?
+  name               String
+  category           String?
+  warehouseLocation  String?
+  minStock           Int       @default(5)
+  price              Int       // In cents
+  shopifyProductId   String?
+  shopifyVariantId   String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  inventory          Inventory?
+  orderItems         OrderItem[]
+  movements          InventoryMovement[]
+  returnItems        ReturnItem[]
+
+  @@map("products")
+}
+
+model Inventory {
+  id                       String   @id @default(uuid())
+  productId                String   @unique
+  product                  Product  @relation(fields: [productId], references: [id])
+  quantity                 Int      @default(0)
+  reservedQuantity         Int      @default(0)
+  shopifyInventoryItemId   String?
+  shopifyLocationId        String?
+  updatedAt                DateTime @updatedAt
+
+  @@map("inventory")
+}
+
+model Order {
+  id              String       @id @default(uuid())
+  shopifyOrderId  String?      @unique
+  channel         OrderChannel @default(shopify)
+  customerName    String?
+  customerEmail   String?
+  status          String
+  totalPrice      Int          // In cents
+  shopifyRaw      Json?
+  qrCode          String?      // Base64 encoded PNG
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  items           OrderItem[]
+  movements       InventoryMovement[]
+  returns         Return[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  sku       String
+  name      String
+  quantity  Int
+  unitPrice Int     // In cents
+
+  @@map("order_items")
+}
+
+model InventoryMovement {
+  id             String       @id @default(uuid())
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+  orderId        String?
+  order          Order?       @relation(fields: [orderId], references: [id])
+  type           MovementType
+  quantityChange Int
+  stockBefore    Int
+  stockAfter     Int
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  note           String?
+  createdAt      DateTime     @default(now())
+
+  @@map("inventory_movements")
+}
+
+model Return {
+  id           String       @id @default(uuid())
+  orderId      String
+  order        Order        @relation(fields: [orderId], references: [id])
+  channel      OrderChannel
+  reason       String
+  status       ReturnStatus @default(pending)
+  processedBy  String?
+  user         User?        @relation(fields: [processedBy], references: [id])
+  createdAt    DateTime     @default(now())
+  processedAt  DateTime?
+  items        ReturnItem[]
+
+  @@map("returns")
+}
+
+model ReturnItem {
+  id        String @id @default(uuid())
+  returnId  String
+  return    Return @relation(fields: [returnId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  sku       String
+  quantity  Int
+  condition String?
+
+  @@map("return_items")
+}
+
+model PosSale {
+  id             String   @id @default(uuid())
+  reference      String   @unique // e.g. POS-1234
+  customerName   String?
+  paymentMethod  String   // cash | card | transfer
+  totalAmount    Int      // In cents
+  operatorId     String
+  operator       User     @relation(fields: [operatorId], references: [id])
+  shopifyOrderId String?
+  createdAt      DateTime @default(now())
+
+  @@map("pos_sales")
+}

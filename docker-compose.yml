@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  wms-backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env
+    depends_on:
+      - wms-postgres
+      - wms-redis
+    networks:
+      - wms-net
+      - proxy-net
+
+  wms-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    networks:
+      - wms-net
+      - proxy-net
+
+  wms-postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file: .env
+    networks:
+      - wms-net
+
+  wms-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - wms-net
+
+networks:
+  wms-net:
+    driver: bridge
+  proxy-net:
+    external: true
+
+volumes:
+  postgres-data:
+  redis-data:
