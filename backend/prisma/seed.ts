@@ -9,10 +9,10 @@ async function main() {
 
     // Upsert Admin
     await prisma.user.upsert({
-        where: { email: 'admin@alaskawms.com' },
+        where: { email: 'admin@alaska.com' },
         update: {},
         create: {
-            email: 'admin@alaskawms.com',
+            email: 'admin@alaska.com',
             name: 'Admin Alaska',
             passwordHash: adminPassword,
             role: 'admin',
@@ -21,10 +21,10 @@ async function main() {
 
     // Upsert Operator
     await prisma.user.upsert({
-        where: { email: 'operator@alaskawms.com' },
+        where: { email: 'operator@alaska.com' },
         update: {},
         create: {
-            email: 'operator@alaskawms.com',
+            email: 'operator@alaska.com',
             name: 'Operator Alaska',
             passwordHash: operatorPassword,
             role: 'operator',
