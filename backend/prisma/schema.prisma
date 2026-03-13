@@ -84,10 +84,12 @@ model Order {
   id              String       @id @default(uuid())
   shopifyOrderId  String?      @unique
   channel         OrderChannel @default(shopify)
+  source          String?      // e.g. "shopify", "pos", "decathlon"
   customerName    String?
   customerEmail   String?
   status          String
   totalPrice      Int          // In cents
+  totalAmount     Int?         // In cents (legacy/duplicate field for compatibility)
   shopifyRaw      Json?
   qrCode          String?      // Base64 encoded PNG
   createdAt       DateTime     @default(now())
@@ -132,17 +134,19 @@ model InventoryMovement {
 }
 
 model Return {
-  id           String       @id @default(uuid())
-  orderId      String
-  order        Order        @relation(fields: [orderId], references: [id])
-  channel      OrderChannel
-  reason       String
-  status       ReturnStatus @default(pending)
-  processedBy  String?
-  user         User?        @relation(fields: [processedBy], references: [id])
-  createdAt    DateTime     @default(now())
-  processedAt  DateTime?
-  items        ReturnItem[]
+  id              String       @id @default(uuid())
+  orderId         String?
+  order           Order?       @relation(fields: [orderId], references: [id])
+  shopifyOrderId  String?
+  channel         OrderChannel?
+  source          String?      // matches the source field used in code
+  reason          String
+  status          ReturnStatus @default(pending)
+  processedBy     String?
+  user            User?        @relation(fields: [processedBy], references: [id])
+  createdAt       DateTime     @default(now())
+  processedAt     DateTime?
+  items           ReturnItem[]
 
   @@map("returns")
 }
@@ -161,15 +165,28 @@ model ReturnItem {
 }
 
 model PosSale {
-  id             String   @id @default(uuid())
-  reference      String   @unique // e.g. POS-1234
+  id             String       @id @default(uuid())
+  reference      String?      @unique // e.g. POS-1234
   customerName   String?
-  paymentMethod  String   // cash | card | transfer
-  totalAmount    Int      // In cents
-  operatorId     String
-  operator       User     @relation(fields: [operatorId], references: [id])
+  paymentMethod  String       // cash | card | transfer
+  totalAmount    Int          // In cents
+  operatorId     String?
+  operator       User?        @relation(fields: [operatorId], references: [id])
+  userId         String?      // field used in code
   shopifyOrderId String?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime     @default(now())
+  items          PosSaleItem[]
 
   @@map("pos_sales")
+}
+
+model PosSaleItem {
+  id        String  @id @default(uuid())
+  saleId    String
+  sale      PosSale @relation(fields: [saleId], references: [id])
+  sku       String
+  quantity  Int
+  price     Int     // In cents
+
+  @@map("pos_sale_items")
 }
