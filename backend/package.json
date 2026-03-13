@@ -14,7 +14,7 @@
     "dependencies": {
         "@fastify/cors": "^8.3.0",
         "@fastify/jwt": "^7.2.1",
-        "@prisma/client": "^7.x",
+        "@prisma/client": "^6.2.1",
         "bcrypt": "^5.1.1",
         "bullmq": "^5.x",
         "date-fns": "^4.1.0",
@@ -30,7 +30,7 @@
         "@types/bcrypt": "^5.0.1",
         "@types/node": "^20.8.6",
         "@types/qrcode": "^1.5.4",
-        "prisma": "^7.x",
+        "prisma": "^6.2.1",
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.2.2"
     }
