@@ -1,6 +1,7 @@
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from './lib/api';
 import Layout from './components/Layout';
 import Stock from './pages/Stock';
 import Movements from './pages/Movements';
@@ -11,24 +12,55 @@ import POSHistory from './pages/POSHistory';
 
 // Placeholder for Login
 function Login() {
+    const [email, setEmail] = React.useState('admin@alaskawms.com');
+    const [password, setPassword] = React.useState('admin123');
+    const [error, setError] = React.useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        try {
+            const { data } = await api.post('/api/v1/auth/login', { email, password });
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            window.location.href = '/';
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Erro ao entrar. Verifica as tuas credenciais.');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
             <div className="card max-w-sm w-full">
                 <h1 className="text-2xl font-semibold mb-1">ALASKA WMS</h1>
                 <p className="text-sm text-muted-foreground mb-8">Entra para gerir o teu armazém.</p>
 
-                <form className="space-y-4" onSubmit={(e) => {
-                    e.preventDefault();
-                    localStorage.setItem('token', 'dummy-token');
-                    window.location.href = '/';
-                }}>
+                {error && (
+                    <div className="bg-danger/10 border border-danger/20 text-danger text-xs p-3 rounded-lg mb-4">
+                        {error}
+                    </div>
+                )}
+
+                <form className="space-y-4" onSubmit={handleSubmit}>
                     <div>
                         <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block mb-1">Email</label>
-                        <input type="email" placeholder="email@exemplo.com" className="input" defaultValue="admin@alaskawms.com" />
+                        <input 
+                            type="email" 
+                            placeholder="email@exemplo.com" 
+                            className="input" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
                     </div>
                     <div>
                         <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block mb-1">Palavra-passe</label>
-                        <input type="password" placeholder="••••••••" className="input" defaultValue="admin123" />
+                        <input 
+                            type="password" 
+                            placeholder="••••••••" 
+                            className="input" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
                     <button type="submit" className="btn-primary w-full mt-2">Entrar</button>
                 </form>
@@ -41,9 +73,7 @@ function Dashboard() {
     const { data: stats, isLoading } = useQuery({
         queryKey: ['dashboard-stats'],
         queryFn: async () => {
-            const { data } = await axios.get('/api/v1/dashboard/stats', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const { data } = await api.get('/api/v1/dashboard/stats');
             return data;
         },
         refetchInterval: 30000 // Refetch every 30s

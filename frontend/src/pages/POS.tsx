@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../lib/api';
 import {
     Plus,
     Minus,
@@ -45,9 +45,7 @@ export default function POS() {
     const { data: products } = useQuery<Product[]>({
         queryKey: ['products-pos'],
         queryFn: async () => {
-            const { data } = await axios.get('/api/v1/products', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const { data } = await api.get('/api/v1/products');
             return data;
         }
     });
@@ -92,12 +90,10 @@ export default function POS() {
     const handleCheckout = async () => {
         setIsProcessing(true);
         try {
-            await axios.post('/api/v1/pos/sale', {
+            await api.post('/api/v1/pos/sale', {
                 items: cart.map(i => ({ sku: i.sku, quantity: i.cartQuantity, price: i.price })),
                 paymentMethod,
                 totalAmount: total
-            }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
 
             setCart([]);

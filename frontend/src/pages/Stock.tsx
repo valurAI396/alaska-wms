@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Package, AlertTriangle, Search, Filter } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/api';
 
 interface Product {
     id: string;
@@ -21,9 +21,7 @@ export default function Stock() {
     const { data: products, isLoading } = useQuery<Product[]>({
         queryKey: ['products'],
         queryFn: async () => {
-            const { data } = await axios.get('/api/v1/products', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const { data } = await api.get('/api/v1/products');
             return data;
         }
     });

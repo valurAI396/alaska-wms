@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../lib/api';
 import {
     QrCode,
     Search,
@@ -44,9 +44,7 @@ export default function Scanner() {
     const handleSearch = async () => {
         if (!searchId) return;
         try {
-            const { data } = await axios.get(`/api/v1/orders/by-shopify/${searchId}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const { data } = await api.get(`/api/v1/orders/by-shopify/${searchId}`);
             setOrder(data);
             setStep(2);
         } catch (err) {
@@ -72,13 +70,11 @@ export default function Scanner() {
         if (!order || selectedItems.length === 0) return;
         setIsProcessing(true);
         try {
-            await axios.post('/api/v1/returns', {
+            await api.post('/api/v1/returns', {
                 shopifyOrderId: order.shopifyOrderId,
                 items: selectedItems.map(i => ({ sku: i.sku, quantity: i.quantity })),
                 reason,
                 source: 'shopify'
-            }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setStep(4);
         } catch (err) {

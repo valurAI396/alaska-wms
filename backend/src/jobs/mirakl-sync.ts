@@ -3,7 +3,9 @@ import IORedis from 'ioredis';
 import { Mirakl } from '../lib/mirakl';
 import { prisma } from '../lib/prisma';
 
-const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379');
+const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+});
 
 export const miraklQueue = new Queue('mirakl-sync', { connection: connection as any });
 

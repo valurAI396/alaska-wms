@@ -8,12 +8,13 @@
         "build": "tsc",
         "start": "node dist/index.js",
         "prisma:generate": "prisma generate",
-        "prisma:migrate": "prisma migrate dev"
+        "prisma:migrate": "prisma migrate dev",
+        "prisma:seed": "ts-node prisma/seed.ts"
     },
     "dependencies": {
         "@fastify/cors": "^8.3.0",
         "@fastify/jwt": "^7.2.1",
-        "@prisma/client": "^5.x",
+        "@prisma/client": "^7.x",
         "bullmq": "^5.x",
         "dotenv": "^16.3.1",
         "fastify": "^4.23.2",
@@ -28,7 +29,7 @@
         "@types/bcrypt": "^5.0.1",
         "@types/node": "^20.8.6",
         "@types/qrcode": "^1.5.4",
-        "prisma": "^5.x",
+        "prisma": "^7.x",
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.2.2"
     }
