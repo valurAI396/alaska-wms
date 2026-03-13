@@ -46,14 +46,14 @@ export async function posRoutes(fastify: FastifyInstance) {
                     data: {
                         shopifyOrderId: `POS-${posSale.id}`,
                         customerEmail: customerEmail || 'pos-customer@alaskawms.com',
-                        totalAmount,
+                        totalPrice: totalAmount, // Use totalPrice which is marked as required in schema
                         status: 'fulfilled',
                         source: 'pos',
                         items: {
                             create: items.map((item: any) => ({
                                 sku: item.sku,
                                 quantity: item.quantity,
-                                price: item.price,
+                                unitPrice: item.price, // Map to unitPrice in orderItem
                             }))
                         }
                     }
@@ -139,7 +139,7 @@ export async function posRoutes(fastify: FastifyInstance) {
         const sales = await prisma.posSale.findMany({
             include: {
                 items: true,
-                user: { select: { name: true } }
+                operator: { select: { name: true } }
             },
             orderBy: { createdAt: 'desc' }
         });
